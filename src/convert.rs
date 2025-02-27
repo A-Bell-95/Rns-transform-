@@ -1,11 +1,11 @@
 const PRIME_BASE_U64: [u64; 18] = [3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67];
 
-pub fn to_rns(x: u64) -> Vec<u64> {
-    PRIME_BASE_U64.iter().map(|&m| x % m).collect()
+pub fn to_rns(x: u64) -> Vec<u8> {
+    PRIME_BASE_U64.iter().map(|&m| (x % m) as u8).collect()
 }
 
 /// Преобразование из RNS обратно в число
-pub fn from_rns(remainders: &[u64]) -> u64 {
+pub fn from_rns(remainders: &[u8]) -> u64 {
     let mut result = 0u128;
     let mut m_acc = 1u128; // Накопленный модуль
 
