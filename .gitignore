@@ -1,0 +1,17 @@
+debug/
+target/
+tmp/
+proptest-regressions/
+
+# MacOS temp file
+.DS_Store
+
+# JB
+.idea/**
+*.iws
+out/
+
+# misc
+.amc.toml
+.code
+.tmuxp.yaml
