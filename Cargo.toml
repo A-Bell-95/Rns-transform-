@@ -11,8 +11,7 @@ num-complex = "0.4"
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter", "local-time"] }
 time = { version = "0.3", features = ["macros"] }
-
-rand = "0.8.5"
+rand = { version = "0.9", features = ["os_rng"] }
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["plotters", "html_reports"]}
