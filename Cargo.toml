@@ -14,4 +14,8 @@ time = { version = "0.3", features = ["macros"] }
 rand = { version = "0.9", features = ["os_rng"] }
 
 [dev-dependencies]
-criterion = { version = "0.5.1", features = ["plotters", "html_reports"]}
+criterion = { version = "0.5", features = ["plotters", "html_reports"]}
+
+[[bench]]
+name = "benches"
+harness = false
