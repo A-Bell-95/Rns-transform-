@@ -1,5 +1,6 @@
 mod convert;
 mod modulus;
+mod ops;
 
 use crate::Rns;
 
