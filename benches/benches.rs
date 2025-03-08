@@ -2,8 +2,8 @@ use criterion::measurement::WallTime;
 use criterion::BenchmarkGroup;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
-use rns_rs::convert::{from_rns, to_rns};
 use rns_rs::modulus::find_suitable_modulus;
+use rns_rs::Rns;
 
 fn bench_find_suitable_modulus(c: &mut Criterion) {
     let mut group = c.benchmark_group("find_suitable_modulus".to_string());
@@ -33,7 +33,7 @@ fn bench_to_rns(c: &mut Criterion) {
 
 fn do_bench_to_rns(c: &mut BenchmarkGroup<WallTime>, num: u64) {
     c.bench_function(format!("to_rns({num})"), |b| {
-        b.iter(|| black_box(to_rns(num)))
+        b.iter(|| black_box(Rns::<18>::new(num)))
     });
 }
 
@@ -41,21 +41,16 @@ fn bench_from_rns(c: &mut Criterion) {
     let mut group = c.benchmark_group("from_rns".to_string());
     group.sample_size(10);
 
-    do_bench_from_rns(
-        &mut group,
-        &[2, 0, 2, 6, 8, 2, 3, 9, 12, 9, 5, 39, 12, 18, 18, 44, 59, 42],
-    );
-    do_bench_from_rns(
-        &mut group,
-        &[
-            2, 0, 5, 1, 11, 2, 10, 5, 15, 23, 15, 29, 19, 1, 15, 34, 24, 14,
-        ],
-    );
+    let rns = Rns::<18>::new(5000);
+    do_bench_from_rns(&mut group, rns);
+
+    let rns = Rns::<18>::new(69000123);
+    do_bench_from_rns(&mut group, rns);
 }
 
-fn do_bench_from_rns(c: &mut BenchmarkGroup<WallTime>, num: &[u8]) {
-    c.bench_function(format!("from_rns({num:?})"), |b| {
-        b.iter(|| black_box(from_rns(num)))
+fn do_bench_from_rns(c: &mut BenchmarkGroup<WallTime>, rns: Rns<18>) {
+    c.bench_function(format!("from_rns({rns:?})"), |b| {
+        b.iter(|| black_box(rns.try_into_u64()))
     });
 }
 
