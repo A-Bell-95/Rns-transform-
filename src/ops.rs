@@ -13,14 +13,14 @@ impl<const N: usize> Add for Rns<N> {
 
 impl<const N: usize> AddAssign for Rns<N> {
     fn add_assign(&mut self, other: Self) {
-        for (i, (&r, &p)) in other
+        for ((rem, &oth_rem), &p) in self
             .remainders
-            .iter()
+            .iter_mut()
+            .zip(other.remainders.iter())
             .zip(PRIME_BASE_U64.iter())
             .take(N)
-            .enumerate()
         {
-            self.remainders[i] = ((self.remainders[i] as u16 + r as u16) % (p as u16)) as u8;
+            *rem = ((*rem as u16 + oth_rem as u16) % (p as u16)) as u8;
         }
     }
 }
@@ -37,19 +37,18 @@ impl<const N: usize> Sub for Rns<N> {
 
 impl<const N: usize> SubAssign for Rns<N> {
     fn sub_assign(&mut self, other: Self) {
-        for (i, (&r, &p)) in other
+        for ((rem, &oth_rem), &p) in self
             .remainders
-            .iter()
+            .iter_mut()
+            .zip(other.remainders.iter())
             .zip(PRIME_BASE_U64.iter())
             .take(N)
-            .enumerate()
         {
-            let new_r = if self.remainders[i] >= r {
-                self.remainders[i] as u16 - r as u16
+            *rem = if *rem >= oth_rem {
+                *rem as u16 - oth_rem as u16
             } else {
-                p as u16 - r as u16 + self.remainders[i] as u16
-            };
-            self.remainders[i] = new_r as u8;
+                p as u16 - oth_rem as u16 + *rem as u16
+            } as u8
         }
     }
 }
