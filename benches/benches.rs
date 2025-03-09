@@ -1,3 +1,6 @@
+mod ops;
+use ops::ops;
+
 use criterion::measurement::WallTime;
 use criterion::BenchmarkGroup;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
@@ -60,4 +63,4 @@ criterion_group!(
     bench_to_rns,
     bench_from_rns
 );
-criterion_main!(modulus);
+criterion_main!(modulus, ops);
