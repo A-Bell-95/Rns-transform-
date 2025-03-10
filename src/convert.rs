@@ -1,34 +1,53 @@
-const PRIME_BASE_U64: [u64; 18] = [
-    3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67,
-];
+use super::{Rns, PRIME_BASE_U64};
 
-pub fn to_rns(x: u64) -> Vec<u8> {
-    PRIME_BASE_U64.iter().map(|&m| (x % m) as u8).collect()
-}
-
-/// Преобразование из RNS обратно в число
-pub fn from_rns(remainders: &[u8]) -> u64 {
-    let mut result = 0u128;
-    let mut m_acc = 1u128; // Накопленный модуль
-
-    for (&r_i, &m_i) in remainders.iter().zip(PRIME_BASE_U64.iter()) {
-        let m_i_ = m_acc; // Текущее произведение предыдущих модулей
-                          // println!("M_i = {}, m_i = {}, extended_gcd = {:?}", m_i_, m_i, extended_gcd(m_i_ as i64, m_i as i64));
-
-        let m_i_inv = mod_inverse(m_i_ as i64, m_i as i64).expect(&format!(
-            "Обратный элемент не существует для {} mod {}",
-            m_i_, m_i
-        )) as u128;
-
-        // Безопасное вычисление разницы (гарантированно неотрицательное значение)
-        let delta = (r_i as u128 + m_i as u128 - (result % m_i as u128)) % m_i as u128;
-
-        // Обновление результата по китайской теореме
-        result = (result + delta * m_i_ * m_i_inv) % (m_acc * m_i as u128);
-        m_acc *= m_i as u128; // Обновляем полный модуль
+impl<const N: usize> Rns<N> {
+    pub fn new(val: u64) -> Self {
+        let mut remainders = [0; N];
+        for (i, p) in PRIME_BASE_U64.iter().take(N).enumerate() {
+            remainders[i] = (val % p) as u8;
+        }
+        Rns { remainders }
     }
 
-    result as u64
+    pub fn try_into_u64(&self) -> Option<u64> {
+        let mut result = 0u128;
+        let mut m_acc = 1u128; // Накопленный модуль
+
+        for (&r_i, &m_i) in self.remainders.iter().zip(PRIME_BASE_U64.iter()) {
+            let m_i_ = m_acc; // Текущее произведение предыдущих модулей
+
+            let m_i_inv = mod_inverse(m_i_ as i64, m_i as i64)? as u128;
+
+            // Безопасное вычисление разницы (гарантированно неотрицательное значение)
+            let delta = (r_i as u128 + m_i as u128 - (result % m_i as u128)) % m_i as u128;
+
+            // Обновление результата по китайской теореме
+            result = (result + delta * m_i_ * m_i_inv) % (m_acc * m_i as u128);
+            m_acc *= m_i as u128; // Обновляем полный модуль
+        }
+
+        Some(result as u64)
+    }
+
+    pub fn into_u64(&self) -> u64 {
+        self.try_into_u64().unwrap()
+    }
+}
+
+impl<const N: usize> TryInto<u64> for &Rns<N> {
+    type Error = ();
+
+    fn try_into(self) -> Result<u64, Self::Error> {
+        self.try_into_u64().ok_or(())
+    }
+}
+
+impl<const N: usize> TryInto<u64> for Rns<N> {
+    type Error = ();
+
+    fn try_into(self) -> Result<u64, Self::Error> {
+        self.try_into_u64().ok_or(())
+    }
 }
 
 /// Функция нахождения обратного элемента (mod_inverse)
